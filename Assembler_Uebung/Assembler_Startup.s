@@ -113,8 +113,8 @@ uItoBCD_Loop
 				
 				SUB 	R4,	R0, R4		; rest = R0 - q * 10 == R0 - R4
 				
-				MOV		R7, R4, LSL R2	; Ergebnis wird um R2 nach Links geshifted und in R7 gespeichert um BCD zu bauen
-				ADD		R1, R1, R7		; Ergebnis += R7 Egal ob ADD, EOR order ORR, da die Anzahl an Nullstellen
+				;MOV		R7, R4, LSL R2	; Ergebnis wird um R2 nach Links geshifted und in R7 gespeichert um BCD zu bauen
+				ADD		R1, R1, R4, LSL R2		; Ergebnis += R7 Egal ob ADD, EOR order ORR, da die Anzahl an Nullstellen
 				
 				MOV 	R0, R3		; Zwischenergebnis für Modulorechnung in R0 schreiben
 				ADD		R2, R2, #4	; R2 - Shiftamount um 4 erhöhen -> eine Hex-Stelle weiter shiften
@@ -147,7 +147,7 @@ Berechnungen
 ;********************************************************************
 ;* Konstanten im CODE-Bereich                                       *
 ;********************************************************************
-STRING          DCB     "110",0x00   	; 'Define Constant Byte', 0-terminierter String
+STRING          DCB     "100",0x00   	; 'Define Constant Byte', 0-terminierter String
 				ALIGN					; Align hier überflüssig, da nach DCB kein weiterer Wert eingelesen/ geladen wird, sonst Align, da Adressgrenzen sonst nicht stimmen -> Alignment Fault	
 ;********************************************************************
 ;* Ende der Programm-Quelle                                         *

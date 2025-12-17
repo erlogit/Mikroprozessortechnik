@@ -75,7 +75,7 @@ ARM Macro Assembler    Page 2
    37 00000004         ;* Hier das eigene (Haupt-)Programm einfuegen        *
    38 00000004         ;*******************************************************
                        *************
-   39 00000004 EB00002E        BL               Berechnungen
+   39 00000004 EB00002D        BL               Berechnungen
    40 00000008         ;*******************************************************
                        *************
    41 00000008         ;* Ende des eigenen (Haupt-)Programms                   
@@ -218,7 +218,7 @@ ARM Macro Assembler    Page 4
   104 00000088         uItoBCD_Loop
   105 00000088 E3500000        CMP              R0, #0      ; Prüft ob R0 ferti
                                                             g ist
-  106 0000008C 0A000009        BEQ              uItoBCD_Done
+  106 0000008C 0A000008        BEQ              uItoBCD_Done
   107 00000090         
   108 00000090 E0863590        UMULL            R3, R6, R0, R5 
                                                             ; R5 == Konstante
@@ -236,40 +236,38 @@ ARM Macro Assembler    Page 4
   114 000000A0 E0404004        SUB              R4, R0, R4  ; rest = R0 - q * 1
                                                             0 == R0 - R4
   115 000000A4         
-  116 000000A4 E1A07214        MOV              R7, R4, LSL R2 ; Ergebnis wird 
-                                                            um R2 nach Links ge
-                                                            shifted und in R7 g
-                                                            espeichert um BCD z
-                                                            u bauen
-  117 000000A8 E0811007        ADD              R1, R1, R7  ; Ergebnis += R7 Eg
-                                                            al ob ADD, EOR orde
-                                                            r ORR, da die Anzah
-                                                            l an Nullstellen
-  118 000000AC         
-  119 000000AC E1A00003        MOV              R0, R3      ; Zwischenergebnis 
+  116 000000A4         ;MOV  R7, R4, LSL R2 ; Ergebnis wird um R2 nach Links ge
+                       shifted und in R7 gespeichert um BCD zu bauen
+  117 000000A4 E0811214        ADD              R1, R1, R4, LSL R2 ; Ergebnis +
+                                                            = R7 Egal ob ADD, E
+                                                            OR order ORR, da di
+                                                            e Anzahl an Nullste
+                                                            llen
+  118 000000A8         
+  119 000000A8 E1A00003        MOV              R0, R3      ; Zwischenergebnis 
                                                             für Modulorechnung 
                                                             in R0 schreiben
-  120 000000B0 E2822004        ADD              R2, R2, #4  ; R2 - Shiftamount 
+  120 000000AC E2822004        ADD              R2, R2, #4  ; R2 - Shiftamount 
                                                             um 4 erhöhen -> ein
                                                             e Hex-Stelle weiter
                                                              shiften
-  121 000000B4         
-  122 000000B4 EAFFFFF3        B                uItoBCD_Loop
-  123 000000B8         
-  124 000000B8         uItoBCD_Done
-  125 000000B8 E1A00001        MOV              R0, R1
+  121 000000B0         
+  122 000000B0 EAFFFFF4        B                uItoBCD_Loop
+  123 000000B4         
+  124 000000B4         uItoBCD_Done
+  125 000000B4 E1A00001        MOV              R0, R1
+  126 000000B8 E8BD4000        LDMFD            SP!, {LR}
+  127 000000BC E12FFF1E        BX               LR
 
 
 
 ARM Macro Assembler    Page 5 
 
 
-  126 000000BC E8BD4000        LDMFD            SP!, {LR}
-  127 000000C0 E12FFF1E        BX               LR
-  128 000000C4         
-  129 000000C4         
-  130 000000C4         Berechnungen
-  131 000000C4 E92D4000        STMFD            SP!, {LR}   ; Store Multiple Fu
+  128 000000C0         
+  129 000000C0         
+  130 000000C0         Berechnungen
+  131 000000C0 E92D4000        STMFD            SP!, {LR}   ; Store Multiple Fu
                                                             ll Descending, PUSH
                                                             , Full Descending -
                                                              Stack Pointer SP z
@@ -278,35 +276,35 @@ ARM Macro Assembler    Page 5
                                                             t, Stack wächst von
                                                              hohen zu niedrigen
                                                              Speicheradressen
-  132 000000C8         
-  133 000000C8 E59F001C        LDR              R0, =STRING ; R0 = &STRING   !!
+  132 000000C4         
+  133 000000C4 E59F001C        LDR              R0, =STRING ; R0 = &STRING   !!
                                                             ! '=' liest entwede
                                                             r Adresse von Strin
                                                             g ein, oder bei Kon
                                                             stanten den Wert, s
                                                             . DIV_9
-  134 000000CC EBFFFFCE        BL               AtoI        ; Branch with Link,
+  134 000000C8 EBFFFFCF        BL               AtoI        ; Branch with Link,
                                                              merkt sich den Urs
                                                             prung des branches 
                                                             in LR, im gegensatz
                                                              zu 'B'
-  135 000000D0         
-  136 000000D0 E59F1018        LDR              R1, =DIV_9  ; MagicNumber für D
+  135 000000CC         
+  136 000000CC E59F1018        LDR              R1, =DIV_9  ; MagicNumber für D
                                                             IV mit 9 wird in R1
                                                              geladen
-  137 000000D4 EBFFFFE1        BL               Formel      ; Aufruf von Unterp
+  137 000000D0 EBFFFFE2        BL               Formel      ; Aufruf von Unterp
                                                             rogramm Formel
-  138 000000D8         
-  139 000000D8 E59F5014        LDR              R5, =DIV_10 ; MagicNumber für D
+  138 000000D4         
+  139 000000D4 E59F5014        LDR              R5, =DIV_10 ; MagicNumber für D
                                                             IV mit 10 wird in R
                                                             1 geladen
-  140 000000DC EBFFFFE6        BL               uItoBCD     ; Aufruf von Unterp
+  140 000000D8 EBFFFFE7        BL               uItoBCD     ; Aufruf von Unterp
                                                             rogramm uItoBCD
-  141 000000E0         
-  142 000000E0 E8BD4000        LDMFD            SP!, {LR}   ; Load Multiple Ful
+  141 000000DC         
+  142 000000DC E8BD4000        LDMFD            SP!, {LR}   ; Load Multiple Ful
                                                             l Descending, POP
-  143 000000E4         
-  144 000000E4 E12FFF1E        BX               LR          ; BX = Branch and E
+  143 000000E0         
+  144 000000E0 E12FFF1E        BX               LR          ; BX = Branch and E
                                                             xchange, Exchange u
                                                             m u.a. in Thumb Mod
                                                             us wechseln zu könn
@@ -318,25 +316,25 @@ ARM Macro Assembler    Page 5
                                                             shalb BX LR um aus 
                                                             Unterprogramm zu ve
                                                             rlassen
-  145 000000E8         
-  146 000000E8         
-  147 000000E8         ;*******************************************************
+  145 000000E4         
+  146 000000E4         
+  147 000000E4         ;*******************************************************
                        *************
-  148 000000E8         ;* Konstanten im CODE-Bereich                           
+  148 000000E4         ;* Konstanten im CODE-Bereich                           
+                                   *
+  149 000000E4         ;*******************************************************
 
 
 
 ARM Macro Assembler    Page 6 
 
 
-                                   *
-  149 000000E8         ;*******************************************************
                        *************
-  150 000000E8 31 31 30 
-              00       STRING  DCB              "110",0x00  ; 'Define Constant 
+  150 000000E4 31 30 30 
+              00       STRING  DCB              "100",0x00  ; 'Define Constant 
                                                             Byte', 0-terminiert
                                                             er String
-  151 000000EC                 ALIGN                        ; Align hier überfl
+  151 000000E8                 ALIGN                        ; Align hier überfl
                                                             üssig, da nach DCB 
                                                             kein weiterer Wert 
                                                             eingelesen/ geladen
@@ -345,13 +343,13 @@ ARM Macro Assembler    Page 6
                                                             onst nicht stimmen 
                                                             -> Alignment Fault 
                                                             
-  152 000000EC         ;*******************************************************
+  152 000000E8         ;*******************************************************
                        *************
-  153 000000EC         ;* Ende der Programm-Quelle                             
+  153 000000E8         ;* Ende der Programm-Quelle                             
                                    *
-  154 000000EC         ;*******************************************************
+  154 000000E8         ;*******************************************************
                        *************
-  155 000000EC                 END
+  155 000000E8                 END
               00000000 
               38E38E39 
               CCCCCCCD 
@@ -412,7 +410,7 @@ Symbol: AtoI_Loop
    Uses
       At line 77 in file Assembler_Startup.s
 Comment: AtoI_Loop used once
-Berechnungen 000000C4
+Berechnungen 000000C0
 
 Symbol: Berechnungen
    Definitions
@@ -444,7 +442,7 @@ Symbol: Reset_Handler
    Uses
       None
 Comment: Reset_Handler unused
-STRING 000000E8
+STRING 000000E4
 
 Symbol: STRING
 
@@ -474,7 +472,7 @@ Symbol: uItoBCD
    Uses
       At line 140 in file Assembler_Startup.s
 Comment: uItoBCD used once
-uItoBCD_Done 000000B8
+uItoBCD_Done 000000B4
 
 Symbol: uItoBCD_Done
    Definitions
