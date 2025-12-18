@@ -10,16 +10,16 @@
 ;* Aufgabe-Nr.: 2 Laborversuch 1               						*
 ;*              			*						    			*
 ;********************************************************************
-;* Gruppen-Nr.: 8			*										*
+;* Gruppen-Nr.: 			*										*
 ;*              			*										*
 ;********************************************************************
 ;* Name / Matrikel-Nr.:  	*										*
-;* Eric Lorenc / 5013021	*	  									*
+;* 							*										*
 ;*							*										*
 ;********************************************************************
 ;* Abgabedatum: 			*              							*
 ;* 18.12.2025				*										*
-;********************************************************************^
+;********************************************************************
 DIV_9			EQU			0x38E38E39 	; mit n=1
 DIV_10			EQU			0xCCCCCCCD	; mit n=3
 ;********************************************************************
@@ -27,6 +27,9 @@ DIV_10			EQU			0xCCCCCCCD	; mit n=3
 ;********************************************************************
 				AREA		Daten, DATA, READWRITE
 Datenanfang
+X				EQU			Datenanfang
+Top_Stack		EQU			Datenanfang + 0x800
+Datenende		EQU 		Top_Stack
 ;********************************************************************
 ;* Programm-Bereich bzw. Programm-Speicher							*
 ;********************************************************************
@@ -36,6 +39,8 @@ Reset_Handler	MSR			CPSR_c, #0x10	; User Mode aktivieren, Reset Handler bereitet
 ;********************************************************************
 ;* Hier das eigene (Haupt-)Programm einfuegen   					*
 ;********************************************************************
+				LDR		SP, =Top_Stack
+				LDR     R0, =X     ; R0 = &STRING			!!! '=' liest entweder Adresse von String ein, oder bei Konstanten den Wert, s. DIV_9
 				BL		Berechnungen		
 ;********************************************************************
 ;* Ende des eigenen (Haupt-)Programms                               *
@@ -51,8 +56,8 @@ CHAR_MINUS  EQU     0x2D    ; '-'
 
 AtoI
 				STMFD	SP!, {LR}
-                MOV     R2, #0   
-				MOV		R5, #0	
+                MOV     R2, #0   		; Zwischenspeicher für Ergebnis / Akku
+				MOV		R5, #0			; Status-Flag
 				
                 ; erstes Zeichen holen
                 LDRB    R1, [R0]        ; R1 = *R0, erstes Byte/ 2 HexZahlen
@@ -84,20 +89,24 @@ AtoI_End
 				LDMFD	SP!, {LR}
 				BX		LR
 				
-				
+
 Formel			
 				STMFD	SP!, {LR}
+				LDR		R1, =DIV_9		; MagicNumber für DIV mit 9 wird in R1 geladen
+				
 				MUL		R2, R0, R0		; X^2 in R2 abgespeichert
 				UMULL	R3, R4, R2, R1	; x^2 wird mit MagicNumber multipliziert, UMULL anstelle von SMULL, da R2 immer positiv ist, da R2 = R0^2 
 				MOV		R3, R4, LSR #1	; Rechts-Shift um n = 1, s. Skript S. 96 Tabelle 18, damit Ergebnis nicht mehr als LONG vorliegt, herunterskalieren durch Rechts-Shift nach mul mit MagicNumber -> LSR #1 == * 2^-n, ASR nicht notwendig, da niemals - vorliegt
 				MOV		R0, R3, LSL #2	; Term wird mit 2^2 = 4 multipliziert und in R0 gespeichert , R3 low, R4 high
-				;Mitunter Rundungfehler, da zuerst geteilt wird und dann multipliziert, Kommazahlen werden immer abgeschnitten Bsp: 8/9 = 0
+										;Mitunter Rundungfehler, da zuerst geteilt wird und dann multipliziert, Kommazahlen werden immer abgeschnitten Bsp: 8/9 = 0
 				LDMFD	SP!, {LR}
 				BX		LR
 				
 
 uItoBCD		
 				STMFD	SP!, {LR}
+				LDR		R5, =DIV_10		; MagicNumber für DIV mit 10 wird in R1 geladen
+				
 				MOV		R1, #0			; Zwischenergebnis
 				MOV 	R2, #0			; Shift-Parameter		
 				
@@ -130,13 +139,10 @@ uItoBCD_Done
 Berechnungen	
 				STMFD	SP!, {LR}		; Store Multiple Full Descending, PUSH, Full Descending - Stack Pointer SP zeigt immer auf letztes belegtes Element, Stack wächst von hohen zu niedrigen Speicheradressen
 				
-				LDR     R0, =STRING     ; R0 = &STRING			!!! '=' liest entweder Adresse von String ein, oder bei Konstanten den Wert, s. DIV_9
                 BL      AtoI            ; Branch with Link, merkt sich den Ursprung des branches in LR, im gegensatz zu 'B'
 				
-				LDR		R1, =DIV_9		; MagicNumber für DIV mit 9 wird in R1 geladen
 				BL		Formel			; Aufruf von Unterprogramm Formel
 				
-				LDR		R5, =DIV_10		; MagicNumber für DIV mit 10 wird in R1 geladen
 				BL 		uItoBCD			; Aufruf von Unterprogramm uItoBCD
 				
 				LDMFD	SP!, {LR}		; Load Multiple Full Descending, POP
@@ -147,8 +153,6 @@ Berechnungen
 ;********************************************************************
 ;* Konstanten im CODE-Bereich                                       *
 ;********************************************************************
-STRING          DCB     "100",0x00   	; 'Define Constant Byte', 0-terminierter String
-				ALIGN					; Align hier überflüssig, da nach DCB kein weiterer Wert eingelesen/ geladen wird, sonst Align, da Adressgrenzen sonst nicht stimmen -> Alignment Fault	
 ;********************************************************************
 ;* Ende der Programm-Quelle                                         *
 ;********************************************************************
