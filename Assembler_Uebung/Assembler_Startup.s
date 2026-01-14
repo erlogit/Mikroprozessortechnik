@@ -42,7 +42,7 @@ Reset_Handler	MSR			CPSR_c, #0x10	; User Mode aktivieren, Reset Handler bereitet
 				LDR		SP, =Top_Stack
 				LDR     R0, =X     ; R0 = &STRING			!!! '=' liest entweder Adresse von String ein, oder bei Konstanten den Wert, s. DIV_9
 				BL		Berechnungen		
-;********************************************************************
+;********************************************************************^^
 ;* Ende des eigenen (Haupt-)Programms                               *
 ;********************************************************************
 endlos			B			endlos
