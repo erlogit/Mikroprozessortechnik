@@ -26,7 +26,13 @@
 
 #include <LPC21xx.H>		/* LPC21xx Definitionen                     */
 
-#define BUFFER_SIZE 10
+#define PINSEL_UART1 			(0x50000)
+#define LCR_MASK_DLAB_ON	(0x9F)
+#define LCR_MASK_DLAB_OFF	(0x1F)
+#define DLL_MASK					(41)
+#define DLM_MASK					(0x00)
+#define FCR_MASK					(0x07)
+
 
 void init_uart1(void);	
 void uart1_putc(char c);	
@@ -70,7 +76,7 @@ int main (void) {
 			print_hex8(*ptr);
 			uart1_puts("\r\n");
 		}
-		
+			
 		if (cmd == 'E') {
             //uart1_getc(); // Leerzeichen
 
@@ -88,25 +94,26 @@ int main (void) {
 
 
 void init_uart1(void) {
-	PINSEL0 |= 0x50000; // jeweils 2 Bit pro Pin; T1D und R1D belegen 0.8 und 0.9 und werden durch 01 initialisiert -> 0101 0000 0000 0000 0000
+	PINSEL0 |= PINSEL_UART1; // jeweils 2 Bit pro Pin; T1D und R1D belegen 0.8 und 0.9 und werden durch 01 initialisiert -> 0101 0000 0000 0000 0000
 	U1LCR = 0x9F; // 8 Datenbits; keine Parität; 1 Stoppbit und DLAB für Baudrate aktiviert
 	U1DLL = 41; // Divisor Latch Least Significant Byte: Divisor für Baudrate von 4800 bei 12,5 MHz = 163 = 0xA3 in Hex
-	U1DLM = 0x00; // Divisor Latch Most Significant Byte: leer, da Divisor kleiner als 255 und somit in die ersten 8 Bit past
+	U1DLM = 0x00; // Divisor Latch Most Significant Byte: leer, da Divisor kleiner als 255 und somit in die ersten 8 Bit passt
 	U1LCR = 0x1F; // DLAB 'Divisor Latch Access Bit' wieder deaktiviert
 	U1FCR = 0x07;
 }
 
 
 void uart1_putc(char c) {
-    while (!(U1LSR & (0x20)));
+    while (!(U1LSR & (0x20))); // !!!
     U1THR = c;
 }
 
 
 char uart1_getc(void) {
-	while (!(U1LSR & 1));
+	while (!(U1LSR & 1)); // !!!
 	return U1RBR;
 }
+
 
 void uart1_puts(char *s) {
 	while (*s) {
